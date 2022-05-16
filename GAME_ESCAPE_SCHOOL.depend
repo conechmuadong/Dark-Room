@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1651587394 source:f:\data\my projects\uet\game_escape_school\main.cpp
+1652358677 source:f:\data\my projects\uet\game_escape_school\main.cpp
 	<SFML/Graphics.hpp>
 	<SFML/Audio.hpp>
 	"button.h"
