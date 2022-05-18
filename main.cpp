@@ -1273,10 +1273,17 @@ void start() {
     Sprite menubg(T_menu);
     Sprite button_play(T_buttonplay);
     Sprite button_exit(T_buttonexit);
-    button_play.setPosition(40*14,40*7);
-    button_exit.setPosition(40*14,40*9);
+    button_play.setPosition(40*9+20,40*7);
+    button_exit.setPosition(40*9+20,40*9);
     in_bgmenu.setTexture(bgmenu);
     window.setFramerateLimit(60);
+    Text names;
+    loads.loadFromFile("data/font/PIXEL.TTF");
+    names.setFont(loads);
+    names.setString("DARK ROOM");
+    names.setPosition(40*5,40*2);
+    names.setCharacterSize(60);
+    names.setColor(Color::Red);
     while (window.isOpen()) {
         Event event,e;
         int isMoving=0;
@@ -1324,7 +1331,6 @@ void start() {
                     if(e.key.code==Mouse::Left)
                         if(button_play.getGlobalBounds().contains(pos.x,pos.y)) {
                             sounds[sf_click].play();
-                            loads.loadFromFile("data/font/PIXEL.TTF");
                             Text loading;
                             loading.setFont(loads);
                             loading.setString("LOADING");
@@ -1376,6 +1382,7 @@ void start() {
             window.draw(menubg);
             window.draw(button_play);
             window.draw(button_exit);
+            window.draw(names);
             window.display();
         }
     }
