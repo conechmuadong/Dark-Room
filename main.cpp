@@ -1,12 +1,31 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include "button.h"
+#include "mainmenu.h"
 #include<bits/stdc++.h>
+#include <chrono>
+#include <thread>
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace std;
 using namespace sf;
 
-RenderWindow window(VideoMode(880, 600), "Re_Schola");
-
+Menu menu;
+RenderWindow window(VideoMode(880, 600), "Project X: The Game but Incompleted");
+struct data {
+    Text chu;
+    int ascii;
+    int x;
+    int y;
+    bool in;
+    int nhat;
+    int ktmove;
+    int key;
+    int keyarea;
+    int check_done;
+    int ques;
+    Sprite in_o;
+} vitris[25][15];
+Texture bgmenu;
 Sprite in_bgmenu;
 Texture stand;
 Sprite stands(stand);
@@ -14,15 +33,19 @@ Texture animation;
 Sprite animated(animation);
 Clock animationtimer;
 IntRect curframe;
+int isMoving=0;
 float speedtimer=0.5f;
 int speed=40;
 float timer=0.2f;
 /// 0=up 1=down 2=right 3=left
 int direction=2;
 /// do vat
+Sprite restart;
 Texture lo;
 Texture box;
 Texture blank;
+Texture exits;
+Sprite finish;
 int vitri[25][15]; /// 4 toi vinh vien ko qua duoc 5 la nen duoc hien 6 la nen bi toi
 Sprite indovat[1000];
 /// do lech hinh nhan vat
@@ -32,35 +55,86 @@ int deltay=46;
 int demdovat=4;
 /// next level
 int iscomplete=0;
-int rickroll=0;
+int rickroll=2;
 Texture Tdoor;
 Sprite door;
 Texture toi,gantoi;
 Sprite dark,partdark;
+Font loads;
 int chayloading=0;
+int isloading[10];
 map<string,Sound> sounds;
 map<string,SoundBuffer> soundbuffers;
-int isloading[10];
+Texture nut_restart;
+/// map3
+int delx=6;
+Sprite graphic[21*14+1];
+Font fonts;
+/// inventory
+int isHolding=0;
+int Inventory=0;
+int issupa1=0;
+int issupa2=0;
+int isDam1=0;
+int isDam2=0;
+int isdone1=0,isdone2=0;
+Texture indung,insai;
+string thats="data/music/supa.ogg";
+string thats1="data/music/love_castle.ogg";
+unsigned long long demso=0;
+char convert(int ascii) {
+    return (char)ascii;
+}
+void sua() {
+    cout<<"chay"<<demso<<endl;
+    demso++;
+}
+void ve_3() {
+    window.draw(in_bgmenu);
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++) {
+//            if(vitris[i][j].check_done==1||vitris[i][j].check_done==2) {
+//                vitris[i][j].in_o.setTexture(indung);
+//                vitris[i][j].in_o.setPosition(40*i,40*j);
+//            }
+            if(vitris[i][j].check_done==0) {
+                vitris[i][j].in_o.setTexture(insai);
+                vitris[i][j].in_o.setPosition(40*i,40*j);
+            }
+            window.draw(vitris[i][j].in_o);
+        }
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++)
+            if(vitris[i][j].in==true)
+                window.draw(vitris[i][j].chu);
+    if(isdone1==1&&isdone2==1)
+        window.draw(door);
+    window.draw(animated);
+    window.display();
+}
 void ve() {
     window.clear();
     if(rickroll==0) {
         window.draw(in_bgmenu);
+        window.draw(restart);
         for(int i=0; i<=22*15; i++)
             window.draw(indovat[i]);
         if(iscomplete==1) {
             //cout<<(animated.getPosition().y+34)/40<<" "<<(animated.getPosition().x+10)/40<<endl<<"--------------"<<endl;
-            if(animated.getPosition().y+34>3*40&&animated.getPosition().x+10==18*40) {
-                window.draw(animated);
-                window.draw(door);
-            }
-            if(animated.getPosition().y+34<=3*40&&animated.getPosition().x+10==18*40) {
-                window.draw(door);
-                window.draw(animated);
-            } else {
-                window.draw(door);
-                window.draw(animated);
-            }
+//            if(animated.getPosition().y+34>3*40&&animated.getPosition().x+10==18*40) {
+//                window.draw(animated);
+//                window.draw(door);
+//            }
+//            if(animated.getPosition().y+34<=3*40&&animated.getPosition().x+10==18*40) {
+//                window.draw(door);
+//                window.draw(animated);
+//            } else {
+            window.draw(restart);
+            //window.draw(door);
+            window.draw(animated);
+            //}
         } else {
+            window.draw(restart);
             window.draw(animated);
         }
 //    window.draw(door);
@@ -74,6 +148,200 @@ void ve() {
     }
     window.display();
 }
+void update_word_data(int xpos,int ypos,string s) {
+    vitris[xpos][ypos].chu.setFont(fonts);
+    vitris[xpos][ypos].chu.setCharacterSize(31);
+    vitris[xpos][ypos].chu.setColor(Color::White);
+    vitris[xpos][ypos].chu.setString(s);
+    vitris[xpos][ypos].chu.setPosition(vitris[xpos][ypos].x,vitris[xpos][ypos].y);
+}
+void bg_music_map3(string paths,int playthatthing) {
+    if(playthatthing==2) {
+        sounds[paths].stop();
+        soundbuffers[thats1].loadFromFile(thats1);
+        sounds[thats1]=Sound{soundbuffers[thats1]};
+        sounds[thats1].play();
+        return;
+    }
+    if(playthatthing==1) {
+        sounds[paths].stop();
+        soundbuffers[thats].loadFromFile(thats);
+        sounds[thats]=Sound{soundbuffers[thats]};
+        sounds[thats].play();
+        return;
+    } else {
+        soundbuffers[paths].loadFromFile(paths);
+        sounds[paths]=Sound{soundbuffers[paths]};
+        sounds[paths].setLoop(true);
+        sounds[paths].play();
+    }
+}
+int check_game_complete_map_3() {
+    int cnt=0,cnt1=0;
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++) {
+            if(vitris[i][j].check_done==1) {
+                cnt++;
+            }
+            if(vitris[i][j].check_done==2)
+                cnt1++;
+        }
+    if(cnt==9&&isdone1==0) {
+        return 1;
+    }
+    if(cnt1==10&&isdone2==0) {
+        return 2;
+    }
+    return 0;
+}
+void check_key_is_fill() {
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++) {
+            if(vitris[i][j].key==vitris[i][j].ascii&&vitris[i][j].ascii!=0) {
+                if(vitris[i][j].ques==1) {
+                    vitris[i][j].check_done=1;
+                    vitris[i][j].in_o.setTexture(indung);
+                    vitris[i][j].in_o.setPosition(40*i,40*j);
+                }
+                if(vitris[i][j].ques==2) {
+                    vitris[i][j].check_done=2;
+                    vitris[i][j].in_o.setTexture(indung);
+                    vitris[i][j].in_o.setPosition(40*i,40*j);
+                }
+                vitris[i][j].nhat=3;
+            }
+        }
+}
+int check_move(int directions) {
+    int posx = animated.getPosition().x;
+    int posy = animated.getPosition().y;
+    posx += 40 - deltax;
+    posy += 34;
+    int debug = 1;
+    switch (directions) {
+    case 1: {
+        posy += 40 * debug;
+        break;
+    }
+    case 0: {
+        posy -= 40 * debug;
+        break;
+    }
+    case 2: {
+        posx += 40 * debug;
+        break;
+    }
+    case 3: {
+        posx -= 40 * debug;
+        break;
+    }
+    }
+    if (vitris[posx / 40][posy / 40].ktmove == 1) {
+
+        return 0;
+    }
+    return 1;
+}
+int check_word(int directions) {
+    Event e;
+    int posx = animated.getPosition().x;
+    int posy = animated.getPosition().y;
+    posx += 40 - deltax;
+    posy += 34;
+    int debug = 1;
+    switch (directions) {
+    case 0: {
+        posy += 40 * debug;
+        break;
+    }
+    case 1: {
+        posy -= 40 * debug;
+        break;
+    }
+    case 2: {
+        posx += 40 * debug;
+        break;
+    }
+    case 3: {
+        posx -= 40 * debug;
+        break;
+    }
+    }
+    posx=posx/40;
+    posy=posy/40;
+    //cout<<vitri[posx][posy].nhat<<endl;
+    if(isHolding==0&&vitris[posx][posy].nhat==1)
+        return 1;
+
+    if(isHolding==1&&vitris[posx][posy].nhat==0)
+        return 2;
+    if(isHolding==1&&vitris[posx][posy].nhat==2)
+        return 2;
+    else
+        return 0;
+//    cout<<vitri[posx][posy].nhat<<endl;
+//    if(vitri[posx][posy].nhat==1) {
+//        cout<<"2"<<endl;
+//        if(isHolding==0) {
+
+//        }
+//    } else {
+//        if(isHolding==1) {
+
+//        }
+//    }
+//    ve_3();
+}
+void update_word(int directions,int decision) {
+    Event e;
+    int posx = animated.getPosition().x;
+    int posy = animated.getPosition().y;
+    posx += 40 - deltax;
+    posy += 34;
+    int debug = 1;
+    switch (directions) {
+    case 0: {
+        posy += 40 * debug;
+        break;
+    }
+    case 1: {
+        posy -= 40 * debug;
+        break;
+    }
+    case 2: {
+        posx += 40 * debug;
+        break;
+    }
+    case 3: {
+        posx -= 40 * debug;
+        break;
+    }
+    }
+    posx=posx/40;
+    posy=posy/40;
+    if(decision==1) {
+        vitris[posx][posy].in=false;
+        Inventory=vitris[posx][posy].ascii;
+        isHolding=1;
+        vitris[posx][posy].ascii=0;
+        vitris[posx][posy].ktmove=0;
+        vitris[posx][posy].nhat=2;
+    }
+    if(decision==2&&vitris[posx][posy].nhat!=3) {
+        vitris[posx][posy].in=true;
+        vitris[posx][posy].ktmove=1;
+        vitris[posx][posy].ascii=Inventory;
+        vitris[posx][posy].nhat=1;
+        string tmp(1,convert(vitris[posx][posy].ascii));
+        //cout<<tmp<<endl;
+        update_word_data(posx,posy,tmp);
+        isHolding=0;
+        Inventory=0;
+    }
+    ve_3();
+}
+
+
 int ktketthucgame() {
     int dem=0;
     for(int i=0; i<=21; i++)
@@ -85,14 +353,28 @@ int ktketthucgame() {
         return 1;
     return 0;
 }
+int ktketthucrickroll() {
+    int posx=animated.getPosition().x;
+    int posy=animated.getPosition().y;
+    posx+=10;
+    posy+=34;
+    if(posx/40==19&&posy/40==12)
+        return 1;
+    return 0;
+    /**
+       in man moi thi de o o x = 19 y=12
+     *
+     */
+
+}
 void chayamthanh(string paths) {
 
     soundbuffers[paths].loadFromFile(paths);
     sounds[paths]=Sound{soundbuffers[paths]};
     sounds[paths].play();
 }
-void Stops(string paths){
-sounds[paths].stop();
+void Stops(string paths) {
+    sounds[paths].stop();
 }
 int check_move_possible(int directions) {
     int posx=animated.getPosition().x;
@@ -118,7 +400,7 @@ int check_move_possible(int directions) {
         break;
     }
     }
-    if(door.getPosition().x==posx&&door.getPosition().y+40*2==posy&&ktketthucgame()==1)
+    if(door.getPosition().x==posx&&door.getPosition().y+40==posy&&ktketthucgame()==1)
         rickroll=1;
     //cout<<"1, "<<posx/40<<" "<<posy/40<<" "<<vitri[posx/40][posy/40]<<endl<<"-----------------"<<endl;
     if(vitri[posx/40][posy/40]==1||vitri[posx/40][posy/40]==3) {
@@ -214,18 +496,28 @@ void rickrolltime() {
     Stops("data/music/bg2.ogg");
     Stops("data/music/footstep.ogg");
     Stops("data/music/laugh1.ogg");
+    Stops("data/music/laugh2.ogg");
+    Stops("data/music/golden.ogg");
+    Stops("data/music/door.ogg");
     int framecnt=4;
-    float framerate=0.05;
+    float framerate=0.03;
     float chay=1;
     Music asley;
     asley.openFromFile("data/music/stage_e.ogg");
     asley.setLoop(true);
     asley.play();
+    Text skips;
+    skips.setFont(loads);
+    skips.setString("Press any key to continue");
+    skips.setPosition(40*8,40*1);
+    skips.setCharacterSize(16);
+    skips.setColor(Color::White);
     while(1) {
         window.pollEvent(e);
         if(e.type==Event::KeyPressed)
-            if(e.key.code==Keyboard::Escape)
-                break;
+        {
+            break;
+        }
         if((int)(chay+framerate)>framecnt) {
             chay=1;
         }
@@ -240,13 +532,11 @@ void rickrolltime() {
         Sprite rick(hay);
         window.clear();
         window.draw(rick);
+        window.draw(skips);
         window.display();
     }
 }
 void startdovat() {
-    lo.loadFromFile("data/item/hole.png");
-    blank.loadFromFile("data/item/blank.png");
-    box.loadFromFile("data/item/box.png");
     for(int i=0; i<=21; i++)
         for(int j=0; j<=14; j++) {
             if(vitri[i][j]==1 || vitri[i][j]==3) {
@@ -293,25 +583,39 @@ void resetbang() {
                 }
             }
 }
+void ketthuc() {
+    Text endgame;
+    endgame.setFont(loads);
+    endgame.setString("THE END");
+    endgame.setPosition(40*8,40*6);
+    endgame.setCharacterSize(60);
+    endgame.setColor(Color::White);
+    Event e;
+    while(1) {
+        window.pollEvent(e);
+        if(e.type== Event::Closed)
+            window.close();
+        window.clear();
+        window.draw(endgame);
+        window.display();
+    }
+}
 void update_darkness(int directions) {
     int posx=animated.getPosition().x;
     int posy=animated.getPosition().y;
     posx+=10;
     posy+=34;
-    Music tmp;
-    SoundBuffer backsground;
-
-    if(isloading[5]==0){
-    chayamthanh("data/music/bg2.ogg");
-    isloading[5]=1;
+    if(posx==20*40&&posy==11*40) {
+        ketthuc();
     }
-    Sound bg;
-    bg.setBuffer(backsground);
-    bg.play();
+    if(isloading[5]==0) {
+        chayamthanh("data/music/bg2.ogg");
+        isloading[5]=1;
+    }
     cout<<posx/40<<" "<<posy/40<<endl;
-    if(posx/40==4&&posy/40==4) {
+    if(posx/40==4&&posy/40==4&&isloading[6]==0) {
         chayamthanh("data/music/footstep.ogg");
-        isloading[0]=1;
+        isloading[6]=1;
     }
     if(posx/40==4&&posy/40==7&&isloading[0]==0) {
 
@@ -335,6 +639,7 @@ void update_darkness(int directions) {
     if(posx/40==17&&posy/40==12&&isloading[4]==0) {
         //cout<<"TRIGGER"<<endl;
         rickrolltime();
+        rickroll = 3;
         isloading[4]=1;
     }
     int xdau=posx;
@@ -614,7 +919,7 @@ void control_map2(Event e) {
 }
 void loading_sceen() {
     /// loading word
-    Font loads;
+
     loads.loadFromFile("data/font/PIXEL.TTF");
     Text loading;
     loading.setFont(loads);
@@ -646,6 +951,10 @@ void loading_sceen() {
         vitri[5][i]=6;
     for(int i=6; i<=20; i++)
         vitri[i][12]=6;
+    vitri[20][12]=7;
+    exits.loadFromFile("data/item/1.png");
+    finish.setTexture(exits);
+    finish.setPosition(20*40,12*40);
     resetbang();
     direction=2;
     float frame=0;
@@ -671,7 +980,19 @@ void loading_sceen() {
 
     } while(repeate>0);
 }
-void start() {
+void restart_game() {
+    animated.setPosition(30,46+40*3);
+    vitri[12][11]=1;
+    vitri[13][11]=1;
+    vitri[14][11]=1;
+    vitri[15][11]=1;
+    vitri[12][12]=2;
+    vitri[13][12]=2;
+    vitri[14][12]=2;
+    vitri[15][12]=2;
+    iscomplete=0;
+}
+void preset_map2() {
     vitri[12][11]=1;
     vitri[13][11]=1;
     vitri[14][11]=1;
@@ -681,91 +1002,321 @@ void start() {
     vitri[14][12]=2;
     vitri[15][12]=2;
     /// music
-    Music menu_bgm,click;
-    menu_bgm.openFromFile("data/music/menu.ogg");
-    click.openFromFile("data/music/click.ogg");
-    menu_bgm.setVolume(50);
-    click.setVolume(50);
-    menu_bgm.setLoop(true);
-    // menu_bgm.play();
     /// background menu
-    Texture bgmenu;
-    bgmenu.loadFromFile("data/bg/menu/bg.png");
-    in_bgmenu.setTexture(bgmenu);
-    /// button
-    Texture btPlay,btCredit;
-    btPlay.loadFromFile("data/button/button02.png");
-    btCredit.loadFromFile("data/button/button01.png");
-    Sprite bt_play(btPlay),bt_credit(btCredit);
-    bt_play.setPosition(310,320);
-    bt_credit.setPosition(310,408);
-    int play=0,credit=0;
+    startdovat();
+    animated.setPosition(30,46+40*3);
+    nut_restart.loadFromFile("data/button/restart.png");
+    restart.setTexture(nut_restart);
+    restart.setPosition(1*40,1*40);
+    restart.setScale(Vector2f(0.5,0.5));
+    /// door
+    door.setPosition(20*40,0*40);
+    animated.setScale(Vector2f(0.7,0.7));
+}
+void loadings() {
+    loads.loadFromFile("data/font/PIXEL.TTF");
+    Text loading;
+    loading.setFont(loads);
+    loading.setString("LOADING");
+    loading.setPosition(40*14,40*10);
+    loading.setCharacterSize(40);
+    loading.setColor(Color::White);
+    direction=2;
+    float frame=0;
+    float anispeed=0.08;
+    int framecnt=4;
     Texture loading_run;
     Sprite aniloading(loading_run);
     aniloading.setPosition(630,470);
     loading_run.loadFromFile("data/ani/run_left.png");
-    float frame=0;
-    float anispeed=0.004;
-    int framecnt=4;
-    window.setFramerateLimit(60);
-    startdovat();
-    animated.setPosition(30,46);
+    int repeate=4;
+    do {
+        if((int)(frame+anispeed)>=framecnt) {
+            frame=0;
+            repeate--;
+            continue;
+        }
+        frame+=anispeed;
+        aniloading.setTextureRect(IntRect(int(frame)*100,0,100,110));
+        window.clear();
+        window.draw(aniloading);
+        window.draw(loading);
+        window.display();
 
-    /// door
+    } while(repeate>0);
+}
+
+void open_da_gate() {
     Tdoor.loadFromFile("data/item/door.png");
     door.setTexture(Tdoor);
-    door.setPosition(18*40,2*40);
+    door.setPosition(20*40,0*40);
+    int posx=animated.getPosition().x;
+    int posy=animated.getPosition().y;
+    posx+=10;
+    posy+=34;
+    if(posx==door.getPosition().x&&posy==door.getPosition().y+40) {
+        loadings();
+        rickroll=0;
+    }
+}
+void control_map3(Event e) {
+    if (e.key.code == Keyboard::W) {
+        if (check_move(0) == 1) {
+            move_up(timer);
+            if (animated.getPosition().y > 6)
+                animated.move(0, -speed);
+        } else {
+            move_up(timer);
+        }
+        direction = 1;
+    } else if (e.key.code == Keyboard::S) {
+        if (check_move(1) == 1) {
 
-    while (window.isOpen()) {
-        Event event,e;
-        int isMoving=0;
-        Vector2i pos= Mouse::getPosition(window);
-        while(window.pollEvent(e)) {
-            if(e.type== Event::Closed)
-                window.close();
-//            if(e.type== Event::MouseButtonPressed) {
-//                if(e.key.code == Mouse::Left) {
-//                    if(bt_play.getGlobalBounds().contains(pos.x,pos.y)) {
-//                        click.play();
-//                        play=1;
-//                    }
-//                }
-//            }
-//            if(e.type== Event::MouseButtonPressed) {
-//                if(e.key.code == Mouse::Left) {
-//                    if(bt_credit.getGlobalBounds().contains(pos.x,pos.y)) {
-//                        click.play();
-//                        credit=1;
-//                    }
-//                }
-//            }
-            ///nhan nut
-            if(animated.getLocalBounds().contains(animated.getPosition().x,animated.getPosition().y))
-                frame=0;
-            if(e.type==Event::KeyPressed) {
-                if(rickroll==1) {
-                    if(chayloading==0) {
-                        loading_sceen();
-                        animated.setPosition(40*2-10,40*5+6);
-                        chayloading=1;
-                        toi.loadFromFile("data/item/dark.png");
-                        gantoi.loadFromFile("data/item/partdark.png");
-                    }
-                    control_map2(e);
-                } else
-                    controls(e);
-                cout<<"Rickroll="<<rickroll<<endl;
+            move_down(timer);
+            if (animated.getPosition().y < 526)
+                animated.move(0, speed);
+        } else {
+
+            move_down(timer);
+        }
+        direction = 0;
+    }
+    if (e.key.code == Keyboard::D) {
+
+        if (check_move(2)) {
+//        if(true){
+
+            move_right(timer);
+            if (animated.getPosition().x < 830)
+                animated.move(speed, 0);
+        } else {
+
+            move_right(timer);
+        }
+        direction = 2;
+    } else if (e.key.code == Keyboard::A) {
+        if (check_move(3)) {
+
+            move_left(timer);
+            if (animated.getPosition().x > -10)
+                animated.move(-speed, 0);
+        } else {
+
+            move_left(timer);
+        }
+        direction = 3;
+    }
+    //cout<<check_word(direction)<<endl;
+    if(check_word(direction)==1) {
+        if(e.key.code==Keyboard::E)
+            update_word(direction,check_word(direction));
+        return;
+    }
+    if(check_word(direction)==2) {
+        if(e.key.code==Keyboard::E)
+            update_word(direction,check_word(direction));
+    }
+    check_key_is_fill();
+    cout<<check_game_complete_map_3()<<endl;
+    if(check_game_complete_map_3()==1&&issupa1==0) {
+        bg_music_map3("data/music/bgmap3.ogg",1);
+        issupa1=1;
+        isdone1=1;
+    }
+    if(sounds[thats].getStatus()==Sound::Stopped&&issupa2==0&&issupa1==1&&isDam1==0) {
+        bg_music_map3("data/music/bgmap3.ogg",0);
+        issupa2=1;
+    }
+    if(check_game_complete_map_3()==2&&isDam1==0) {
+        bg_music_map3("data/music/bgmap3.ogg",2);
+        isDam1=1;
+        isdone2=1;
+    }
+    if(sounds[thats1].getStatus()==Sound::Stopped&&isDam2==0&&isDam1==1&&issupa1==0) {
+        bg_music_map3("data/music/bgmap3.ogg",0);
+        isDam2=1;
+    }
+    if(isdone1==1&&isdone2==1)
+        open_da_gate();
+    //cout<<isHolding<<" "<<Inventory<<endl;
+    ve_3();
+}
+void bebug(int xpos,int ypos,string s) {
+    vitris[xpos][ypos].in=true;
+    vitris[xpos][ypos].nhat=true;
+    vitris[xpos][ypos].chu.setFont(fonts);
+    vitris[xpos][ypos].chu.setCharacterSize(31);
+    vitris[xpos][ypos].chu.setColor(Color::White);
+    vitris[xpos][ypos].chu.setString(s);
+    vitris[xpos][ypos].ascii=(int)s[0];
+    vitris[xpos][ypos].ktmove=1;
+    vitris[xpos][ypos].x=40*xpos+delx;
+    vitris[xpos][ypos].y=ypos*40+delx;
+    vitris[xpos][ypos].chu.setPosition(vitris[xpos][ypos].x,vitris[xpos][ypos].y);
+}
+void set_key(int y,int x,char s,int question) {
+    vitris[x][y].key=(int)s;
+    vitris[x][y].check_done=0;
+    vitris[x][y].ques=question;
+}
+void preset() {
+    cout<<"chay"<<endl;
+    indung.loadFromFile("data/item/keyarea/true.png");
+    insai.loadFromFile("data/item/keyarea/false.png");
+    fonts.loadFromFile("data/font/PIXEL.TTF");
+
+    window.setFramerateLimit(60);
+    animated.setPosition(deltax,deltay);
+    animated.setScale(Vector2f(0.7,0.7));
+    bg_music_map3("data/music/bgmap3.ogg",0);
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++) {
+            vitris[i][j].in=false;
+            vitris[i][j].nhat=false;
+            vitris[i][j].ascii=0;
+            vitris[i][j].x=40*i+delx;
+            vitris[i][j].y=j*40+delx;
+            vitris[i][j].check_done=3;
+        }
+    bebug(3,2,"S");
+    bebug(5,12,"U");
+    bebug(18,6,"P");
+    bebug(14,5,"A");
+    bebug(19,13,"I");
+    bebug(9,5,"D");
+    bebug(11,2,"O");
+    bebug(7,4,"L");
+    bebug(8,12,"Z");
+    bebug(16,8,"T");
+    bebug(5,11,"L");
+    bebug(7,3,"Y");
+    bebug(4,8,"E");
+    bebug(16,7,"R");
+    bebug(4,8,"O");
+    bebug(7,6,"V");
+    bebug(9,3,"E");
+    bebug(6,2,"C");
+    bebug(16,8,"A");
+    bebug(6,6,"S");
+    bebug(20,5,"T");
+    bebug(17,8,"L");
+    bebug(13,8,"E");
+    bebug(3,3,"E");
+    for(int i=3; i<=6; i++)
+        vitris[i][2].keyarea=1;
+    for(int i=8; i<=11; i++)
+        vitris[i][2].keyarea=1;
+    set_key(2,3,'S',1);
+    set_key(2,4,'U',1);
+    set_key(2,5,'P',1);
+    set_key(2,6,'E',1);
+    set_key(2,7,'R',1);
+    set_key(2,9,'I',1);
+    set_key(2,10,'D',1);
+    set_key(2,11,'O',1);
+    set_key(2,12,'L',1);
+    set_key(8,3,'L',2);
+    set_key(8,4,'O',2);
+    set_key(8,5,'V',2);
+    set_key(8,6,'E',2);
+    set_key(8,8,'C',2);
+    set_key(8,9,'A',2);
+    set_key(8,10,'S',2);
+    set_key(8,11,'T',2);
+    set_key(8,12,'L',2);
+    set_key(8,13,'E',2);
+}
+int is_complete_set_map_2=0;
+int is_complete_set_map_3=0;
+void initData()
+{
+    lo.loadFromFile("data/item/hole.png");
+    blank.loadFromFile("data/item/blank.png");
+    box.loadFromFile("data/item/box.png");
+    bgmenu.loadFromFile("data/bg/menu/bg.png");
+    in_bgmenu.setTexture(bgmenu);
+    window.setFramerateLimit(60);
+}
+void start(Event e) {
+        if(e.type== Event::Closed)
+            window.close();
+        ///nhan nut
+        if(rickroll==2&&is_complete_set_map_3==0) {
+            is_complete_set_map_3=1;
+            preset();
+        }
+        if(rickroll==0&&is_complete_set_map_2==0) {
+            preset_map2();
+            is_complete_set_map_2=1;
+        }
+        cout<<"check"<<rickroll<<endl;
+        if(e.type==Event::KeyPressed) {
+            if(rickroll==2)
+                control_map3(e);
+            if(rickroll==1) {
+                if(chayloading==0) {
+                    loading_sceen();
+                    animated.setPosition(40*2-10,40*5+6);
+                    chayloading=1;
+                    toi.loadFromFile("data/item/dark.png");
+                    gantoi.loadFromFile("data/item/partdark.png");
+                }
+                control_map2(e);
+            }
+            if(rickroll==0) {
+                controls(e);
             }
 
-            if(isMoving==0)
-                update_idle(direction);
         }
-        animated.setScale(Vector2f(0.7,0.7));
-        //cout<<animated.getPosition().x<<" "<<animated.getPosition().y<<endl;
+        if(rickroll==0) {
+            Vector2i pos=Mouse::getPosition(window);
+            if(e.type==Event::MouseButtonPressed)
+                if(e.key.code==Mouse::Left)
+                    if(restart.getGlobalBounds().contains(pos.x,pos.y)) {
+                        restart_game();
+                    }
+        }
+        if(rickroll==3)
+        {
+            window.clear();
+            Texture credit1Texture;
+            credit1Texture.loadFromFile("data/bg/credit/credit1.png");
+            Sprite credit1;
+            credit1.setTexture(credit1Texture);
+            window.draw(credit1);
+            window.display();
+            sleep_until(system_clock::now() + std::chrono::seconds(10));
+            window.close();
+        }
+        if(isMoving==0)
+            update_idle(direction);
+    if(rickroll==2)
+        ve_3();
+    if(rickroll!=2&&rickroll!=3) {
         ve();
     }
 }
 int main() {
-    start();
+    bool firstTime = true;
+    int gameStatus = 0;
+    initData();
+    while (window.isOpen()) {
+        Event event,e;
+        while(window.pollEvent(e)) {
+            switch (gameStatus)
+            {
+            case 1:
+                start(e);
+                break;
+            case -1:
+                window.close();
+                break;
+            default:
+                menu.render(&window);
+                window.display();
+                gameStatus = menu.getEvent(&window);
+            }
+        }
+    }
     return 0;
 }

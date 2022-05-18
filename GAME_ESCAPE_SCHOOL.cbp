@@ -13,14 +13,14 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="../../../../SFML-2.5.1-windows-gcc-5.1.0-tdm-32-bit/SFML-2.5.1/include" />
+					<Add directory="../../Code/SFML-2.5.1/include" />
 				</Compiler>
 				<Linker>
 					<Add library="sfml-system-d" />
 					<Add library="sfml-graphics-d" />
 					<Add library="sfml-window-d" />
 					<Add library="sfml-audio-d" />
-					<Add directory="../../../../SFML-2.5.1-windows-gcc-5.1.0-tdm-32-bit/SFML-2.5.1/lib" />
+					<Add directory="../../Code/SFML-2.5.1/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -42,9 +42,14 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=c++11" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="button.cpp" />
+		<Unit filename="button.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="mainmenu.cpp" />
+		<Unit filename="mainmenu.h" />
 		<Unit filename="meme.h" />
 		<Unit filename="save01.sav" />
 		<Extensions>
