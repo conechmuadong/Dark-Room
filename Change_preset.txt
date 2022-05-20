@@ -1,0 +1,51 @@
+void restart_game() {
+    animated.setPosition(30,46+40*3);
+    for(int i=0; i<=21; i++)
+        for(int j=0; j<=14; j++)
+            vitri[i][j]=0;
+    vitri[12][11]=1;
+    vitri[6][5]=1;
+    vitri[5][11]=1;
+    vitri[8][11]=1;
+    vitri[5][17]=1;
+    vitri[4][4]=1;
+    vitri[16][11]=1;
+    vitri[15][2]=1;
+    vitri[3][7]=2;
+    vitri[5][9]=2;
+    vitri[3][12]=2;
+    vitri[5][12]=2;
+    vitri[4][8]=2;
+    vitri[4][19]=2;
+    vitri[10][6]=2;
+    iscomplete=0;
+    resetbang();
+}
+void preset_map2() {
+    vitri[12][11]=1;
+    vitri[6][5]=1;
+    vitri[5][11]=1;
+    vitri[8][11]=1;
+    vitri[5][17]=1;
+    vitri[4][4]=1;
+    vitri[16][11]=1;
+    vitri[15][2]=1;
+    vitri[3][7]=2;
+    vitri[5][9]=2;
+    vitri[3][12]=2;
+    vitri[5][12]=2;
+    vitri[4][8]=2;
+    vitri[4][19]=2;
+    vitri[10][6]=2;;
+    /// music
+    /// background menu
+    startdovat();
+    animated.setPosition(30,46+40*3);
+    nut_restart.loadFromFile("data/button/restart.png");
+    restart.setTexture(nut_restart);
+    restart.setPosition(1*40,1*40);
+    restart.setScale(Vector2f(0.5,0.5));
+    /// door
+    door.setPosition(18*40,2*40);
+    animated.setScale(Vector2f(0.7,0.7));
+}
